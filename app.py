@@ -20,6 +20,7 @@ from utility import login_required, search, gbp, get_expense, get_income, get_tr
 
 # Configure application
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY")
 
 # Custom filter
 app.jinja_env.filters["gbp"] = gbp
