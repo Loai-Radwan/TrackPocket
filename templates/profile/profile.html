@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Profile
+{% endblock %}
+
+{% block main %}
+
+<div class="container py-5">
+
+    <div class="card shadow-sm mx-auto" style="max-width: 700px;">
+        <div class="card-body">
+
+            <form action="/profile/upload_profile_picture" method="post" enctype="multipart/form-data">
+                <div class="profile-picture-container text-center mb-4 "
+                    onclick="document.getElementById('profile_picture').click()">
+
+                    <img src="{{ url_for('static', filename='images/' + user.profile_picutre) }}" alt="Profile Picture"
+                        enctype="multipart/form-data" class="profile-picture rounded-circle mb-3 border">
+                    <input type="file" id="profile_picture" name="profile_picture" accept=".jpg,.jpeg,.png,.webp"
+                        onchange="this.form.submit()" hidden>
+
+                    <div class="profile-overlay">
+                        <i class="bi bi-pencil-fill"></i>
+                        <span>Edit</span>
+                    </div>
+
+                </div>
+            </form>
+            <h2>{{ user.name }}</h2>
+
+            <hr>
+
+            <h4 class="mb-3">Account Information</h4>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <strong>Username</strong>
+                    <p>{{ user.username }}</p>
+                </div>
+
+                <div class="col-md-6">
+                    <strong>Email</strong>
+                    <p>{{ user.email }}</p>
+                </div>
+
+                <div class="col-md-6">
+                    <strong>Member Since</strong>
+                    <p>{{ user.created_at[:10] }}</p>
+                </div>
+            </div>
+
+            <hr>
+
+            <h4 class="mb-3">Financial Overview</h4>
+
+            <div class="row text-center">
+
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6>Balance</h6>
+                            <h4 class="text-primary">
+                                {{ balance | gbp}}
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6>Income</h6>
+                            <h4 class="text-success">
+                                {{ income | gbp }}
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6>Expenses</h6>
+                            <h4 class="text-danger">
+                                {{ expense | show_expense}}
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6>Transactions</h6>
+                            <h4>{{ transactions_count }}</h4>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <hr>
+
+            <div class="d-flex flex-column flex-md-row gap-2">
+                <a href="/profile/change_password" class="btn btn-outline-primary">
+                    Change Password
+                </a>
+
+                <a href="/logout" type="submit" class="btn btn-outline-secondary">
+                    Log out
+                </a>
+
+                <button type="button" data-bs-toggle="modal" class="btn btn-danger ms-md-auto  "
+                    data-bs-target="#exampleModal">
+                    Delete Account
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">
+
+                    Delete Account
+                </h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    This action cannot be undone. All of your account information and financial data will be permanently
+                    removed.
+                </p>
+                <p class="fs-4">Are you sure you want to delete your account?</p>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+
+                    Cancel
+                </button>
+                <form method="post" action="/profile/delete">
+                    <button type="submit" class="btn btn-danger" id="ok">Delete
+
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

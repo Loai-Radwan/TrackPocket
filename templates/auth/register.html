@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Register
+{% endblock %}
+
+{% block main %}
+
+
+
+<div class=" container  ">
+  <h2 class="text-center mb-4">Register</h2>
+
+  <form id="registerForm" method="post" action="/register">
+
+    <!-- Name -->
+    <div class="mb-3">
+      <label class="form-label">Name</label>
+      <input type="text" class="form-control" name="name"  autocomplete="off" value="{{name}}">
+    </div>
+
+    <!-- Email -->
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input type="email" class="form-control" name="email"  autocomplete="off" value="{{email}}">
+    </div>
+
+    <!-- Password -->
+    <div class="mb-3">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-control" name="password"  autocomplete="off" value="{{password}}">
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="mb-3">
+      <label class="form-label">Confirm Password</label>
+      <input type="password" class="form-control" name="confirmPassword"  autocomplete="off" value="{{confirm}}">
+    </div>
+
+    <!-- Error -->
+    <div id="error" class="text-danger mb-3"></div>
+
+    <button type="submit" class="btn btn-primary w-100 my-3">Register</button>
+
+  </form>
+</div>
+
+{%endblock%}

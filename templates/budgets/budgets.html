@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Budgets
+{% endblock %}
+
+{% block main %}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Budgets</h2>
+
+        <a href="/budgets/add" class="btn btn-primary">
+            Create Budget
+        </a>
+    </div>
+
+
+
+
+    {% if budgets%}
+    {% for budget in budgets %}
+    {% set percentage = ((-budget.spent) / budget.budget ) * 100%}
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between">
+                <h5>{{ budget.name }}</h5>
+                <span>{{ budget.budget | gbp }}</span>
+            </div>
+
+
+            <p class="text-muted mb-2">
+                <span>{{ budget.spent | show_expense}} spent. </span>
+
+                {% if (-budget.spent) > budget.budget %}
+                <strong class="text-danger">You are over the budget.</strong>
+                <span class="text-danger">
+                    {{ (budget.budget + budget.spent) | show_expense }}
+                </span>
+                over
+                {% else %}
+
+                <span calss="text-secondary">
+                    {{ (budget.budget + budget.spent) | gbp }} remaining
+                </span>
+
+                {% endif %}
+
+            </p>
+
+
+            <div class="progress">
+                <div class="progress-bar bg-{% if percentage >= 100 %}
+            bg-danger
+            {% elif percentage >= 80 %}
+            bg-warning
+            {% else %}
+            bg-success
+            {% endif %}" role="progressbar" style="width: {{ percentage }}%;">
+                    <!-- {{ percentage }}% -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+
+
+    <div class="card shadow-sm">
+    <div class="text-center py-5">
+        <h5>No budgets yet</h5>
+        <p class="text-muted">
+            Create your first budget to start managing your spending and stay on track with your financial goals.
+        </p>
+
+        <div class="text-center py-2 ">
+            <a href="/budgets/add" class="btn btn-primary fs-4">
+                Create Budget
+            </a>
+        </div>
+
+    </div>
+
+    {% endif %}
+    </div>
+</div>
+
+{% endblock %}

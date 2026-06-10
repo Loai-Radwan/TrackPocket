@@ -1,0 +1,22 @@
+{% extends "/transactions/tran.html" %}
+
+{% block title %}
+Edit Transaction
+{% endblock %}
+
+{% block method %}
+
+<h2 class="mb-4 text-center">Edit Transaction</h2>
+
+<form action="/transactions/edit/{{ id }}" method="post">
+
+    {% endblock %}
+
+    {% block buttom %}
+    <button type="submit" class="btn btn-primary w-100">
+        Update Transaction
+    </button>
+
+</form>
+
+{% endblock %}

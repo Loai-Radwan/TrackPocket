@@ -1,0 +1,118 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Transactions
+{% endblock %}
+
+{% block main %}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Transactions</h2>
+
+        <a href="/transactions/add" class="btn btn-primary">
+            Add Transactions
+        </a>
+    </div>
+    <div class="card shadow-sm mb-5">
+
+        {%if transactions%}
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 ">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th class="text-end">Amount</th>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>
+                            {% if transaction.type == "Income" %}
+                            <span class="badge text-bg-success p-1">
+                                Income
+                            </span>
+                            {% else %}
+                            <span class="badge text-bg-danger p-1">
+                                Expense
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="badge text-bg-secondary">
+                                {{ transaction.category }}
+                            </span>
+                        </td>
+
+                        <td class="text-end">
+                            {% if transaction.type == "Income" %}
+                            <span class="text-success">
+                                +{{ transaction.amount | gbp }}
+                            </span>
+                            {% else %}
+                            <span class="text-danger">
+                                -{{ transaction.amount | show_expense }}
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <td>{{ transaction.date }}</td>
+
+                        <td>{{ transaction.description }}</td>
+                        <td>
+
+
+                            <a href="/transactions/edit/{{ transaction.id }}"
+                                class="btn btn-sm btn-outline-primary m-1">
+                                Edit
+                            </a>
+
+                            <form method="post" action="/transactions/delete/{{ transaction.id }}" class="d-inline">
+                                <button href="" class="btn btn-sm btn-outline-danger m-1">
+                                    Delete
+
+                                </button>
+                            </form>
+
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+
+        {%else%}
+
+        <div class="text-center py-5">
+            <h5>No transactions yet</h5>
+            <p class="text-muted">
+                Start tracking your finances by adding your first transaction.
+            </p>
+
+            <div class="text-center py-2 ">
+                <a href="/transactions/add" class="btn btn-primary fs-4">
+                    Add Transaction
+                </a>
+            </div>
+
+        </div>
+
+        {%endif%}
+
+    </div>
+
+
+</div>
+
+
+{% endblock %}

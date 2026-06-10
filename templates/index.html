@@ -1,0 +1,139 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block main %}
+
+<section class="hero d-flex align-items-center justify-content-center ">
+    <div class="container  ">
+        <h1 class="mb-3">Track Every Pound with Confidence</h1>
+
+        <p class="fs-5 mb-3">
+            Track income, monitor expenses,
+            create budgets, and achieve your savings goals.
+        </p>
+        <div>
+            <a href="/register" class="btn btn-primary m-2">
+                Get Started
+            </a>
+
+            <a href="#features" class="btn btn-outline-primary m-2">
+                Learn More
+            </a>
+        </div>
+
+
+        <i class="bi bi-arrow-down down-arrow"></i>
+    </div>
+</section>
+
+
+<!-- Features -->
+<section id="features" class="py-5 bg-success-subtle">
+    <div class="container">
+
+        <div class="text-center mb-4">
+            <h2>Features</h2>
+            <p class="text-muted">
+                Everything you need to manage your finances.
+            </p>
+        </div>
+
+        <div class="row g-4">
+
+            <div class="col-md-4">
+                <div class="card feature-card h-100 shadow lift">
+                    <div class="card-body text-center">
+                        <h4>Expense Tracking</h4>
+                        <p>
+                            Record every transaction and stay
+                            on top of your spending.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card feature-card h-100 shadow lift">
+                    <div class="card-body text-center">
+                        <h4>Budget Planning</h4>
+                        <p>
+                            Set monthly budgets and monitor
+                            your progress.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card feature-card h-100 shadow lift">
+                    <div class="card-body text-center">
+                        <h4>Savings Goals</h4>
+                        <p>
+                            Create financial goals and track
+                            your journey toward them.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- How it works -->
+<section class="py-5 bg-white">
+    <div class="container">
+
+        <div class="text-center mb-5">
+            <h2>How It Works</h2>
+        </div>
+
+        <div class="row text-center">
+
+            <div class="col-md-3">
+                <h4>1</h4>
+                <p>Create Account</p>
+            </div>
+
+            <div class="col-md-3">
+                <h4>2</h4>
+                <p>Add Transactions</p>
+            </div>
+
+            <div class="col-md-3">
+                <h4>3</h4>
+                <p>Track Spending</p>
+            </div>
+
+            <div class="col-md-3">
+                <h4>4</h4>
+                <p>Reach Goals</p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta text-center bg-info-subtle py-4">
+    <div class="container">
+
+        <h2>Ready to Take Control of Your Finances?</h2>
+
+        <p class="lead my-3">
+            Join TrackPocket today and start managing your money smarter.
+        </p>
+
+        <a href="/register" class="btn btn-primary btn-lg">
+            Create Free Account <i class="bi bi-arrow-right arrow-left"></i>
+        </a>
+
+    </div>
+</section>
+
+
+
+{% endblock %}

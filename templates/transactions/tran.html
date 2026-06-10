@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+
+
+{% block main %}
+
+<div class="container py-5">
+
+    <div class="mx-auto" style="max-width: 600px;">
+        <div class="card-body">
+
+{% block method %}
+
+
+{% endblock %}
+
+<div class="mb-3">
+    <label for="type" class="form-label">
+        Transaction Type
+    </label>
+    <select class="form-select" id="type" name="type">
+        <option value="" selected disabled>
+            Select Type
+        </option>
+        {%for type in types%}
+        <option value="{{type}}">{{type}}</option>
+        {% endfor %}
+
+    </select>
+</div>
+
+<div class="mb-3">
+    <label for="amount" class="form-label">
+        Amount (£)
+    </label>
+    <input type="number" step="0.01" min="0.01" class="form-control" id="amount" name="amount" placeholder="0.00"
+        value="{{amount}}">
+</div>
+
+<div class="mb-3">
+    <label for="category" class="form-label">
+        Category
+    </label>
+    <select class="form-select" id="category" name="category">
+        <option value="" selected disabled>
+            Select Category
+        </option>
+        {%for category in categories%}
+        <option value="{{category}}">{{category}}</option>
+
+        {% endfor %}
+
+    </select>
+</div>
+
+<div class="mb-3">
+    <label for="date" class="form-label">
+        Date
+    </label>
+    <input type="date" class="form-control" id="date" name="date" placeholder="Date" value="{{date}}">
+
+</div>
+
+<div class="mb-3">
+    <label for="description" class="form-label">
+        Description
+    </label>
+    <textarea class="form-control" id="description" name="description" rows="3"
+        placeholder="Optional description">{{description}}</textarea>
+</div>
+
+{% block buttom%}
+
+{% endblock %}
+
+
+</div>
+<script>
+
+
+
+    document.querySelector("#type").value = "{{ type }}";
+    document.querySelector("#category").value = "{{ category }}";
+
+</script>
+
+{% endblock%}

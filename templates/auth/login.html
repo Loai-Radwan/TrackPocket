@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Log IN
+{% endblock %}
+
+{% block main %}
+
+<div class=" container">
+  <h3 class="text-center mb-4">Login</h3>
+
+  <form method="post" action="/login">
+
+    <!-- Email -->
+    <div class="mb-3">
+      <label class="form-label">Email OR username</label>
+      <input type="text" class="form-control" name="email"  autocomplete="off" value="{{email}}">
+    </div>
+
+    <!-- Password -->
+    <div class="mb-3">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-control" name="password"  autocomplete="off" value="{{password}}">
+    </div>
+
+    <!-- Error -->
+    <div id="error" class="text-danger mb-3"></div>
+
+    <button type="submit" class="btn btn-primary w-100">Login</button>
+
+  </form>
+</div>
+
+{%endblock%}
+

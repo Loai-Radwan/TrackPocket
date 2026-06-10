@@ -1,0 +1,231 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block main %}
+
+<!-- Overview  -->
+<div class="container py-4">
+    <h1 class="mb-4">Hello <span class="text-primary">{{name}} </span></h1>
+
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5>Balance</h5>
+                    <h2 class="text-primary"> {{balance | gbp}} </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5>Total Income</h5>
+                    <h2 class="text-success">{{income | gbp}}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card text-center shadow-sm">
+                <div class="card-body">
+                    <h5>Total Expenses</h5>
+                    <h2 class="text-danger">{{expense | gbp }}</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <seciton class="d-flex  align-items-center gap-2 flex-wrap justify-content-center">
+
+    {%if categories%}
+
+    <!-- Expenses category cahrt  -->
+    <div class="card mb-5 flex-md-fill">
+        <div class="card-body">
+            <canvas id="expenseChart"></canvas>
+        </div>
+    </div>
+
+
+    {% endif %}
+
+    {%if balance%}
+
+    <!-- income vs expenses chart   -->
+    <div class="card mb-5  flex-md-fill">
+        <div class="card-body">
+            <canvas id="moneyChart"></canvas>
+        </div>
+    </div>
+
+
+    {% endif %}
+
+
+</seciton>
+
+{%if months%}
+
+<!-- Spnding over time  -->
+<div class="card mb-5">
+    <div class="card-body">
+        <canvas id="spendingChart"></canvas>
+    </div>
+</div>
+
+{% endif %}
+
+
+    {% if transactions %}
+
+    <!-- Rencent Transactions  -->
+    <div class="card shadow-sm">
+        <div class="card-header">
+            Recent Transactions
+        </div>
+
+        <div class="table-responsive">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Transactions Type</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for transaction in transactions %}
+                    <tr>
+                        <td>
+                            {% if transaction["type"] == "Income" %}
+                            <span class="badge text-bg-success">
+                                Income
+                            </span>
+                            {% else %}
+                            <span class="badge text-bg-danger">
+                                Expense
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="badge text-bg-secondary">
+                                {{ transaction["category"] }}
+                            </span>
+                        </td>
+
+                        <td class="text-success">
+                            {% if transaction["type"] == "Income" %}
+                            <span class="text-success">
+                                +{{ transaction["amount"] | gbp }}
+                            </span>
+                            {% else %}
+                            <span class="text-danger">
+                                -{{ transaction["amount"] | show_expense }}
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <td>{{transaction["date"]}}</td>
+                    </tr>
+                    {% endfor%}
+
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+
+    new Chart(
+        document.getElementById("moneyChart"),
+        {
+            type: "bar",
+            data: {
+                labels: ["Income", "Expense"],
+                datasets: [{
+                    label: "Expenses (£)",
+                    data: [{{ income }}, {{ expense }}] ,
+            backgroundColor: [
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(255, 99, 132, 0.2)'
+            ],
+    borderColor: [
+
+      'rgb(75, 192, 192)', 'rgb(255, 99, 132)'
+    ],
+            borderWidth: 1
+        }]
+        } ,
+        options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+    }
+
+    );
+
+    const categories = {{ categories | tojson }};
+    const amounts = {{ amounts | tojson }};
+
+    new Chart(
+        document.getElementById("expenseChart"),
+        {
+            type: "doughnut",
+            data: {
+                labels: categories,
+                datasets: [{
+                    data: amounts
+
+                }]
+            }
+
+        }
+    );
+
+
+    const months = {{ months | tojson }};
+    const totals = {{ totals | tojson }};
+
+    new Chart(
+        document.getElementById("spendingChart"),
+        {
+            type: "line",
+            data: {
+                labels: months,
+                datasets: [{
+                    label: "Spending (£)",
+                    data: totals,
+                    borderColor: 'rgb(255, 99, 132)',
+                    fill :true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        }
+    );
+
+
+</script>
+
+{%endblock%}

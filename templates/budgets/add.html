@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Dashboard
+{% endblock %}
+
+{% block main %}
+
+<div class="container py-4">
+
+    <div class="card shadow-sm mx-auto" style="max-width: 600px;">
+        <div class="card-body">
+
+            <h2 class="mb-4 text-center">Add Budget</h2>
+
+            <form action="/budgets/add" method="post">
+
+                <div class="mb-3">
+                    <label for="name" class="form-label">
+                        Budget Category
+                    </label>
+
+                    <select class="form-select" id="name" name="name" >
+                        <option value="" selected disabled>
+                            Select Category
+                        </option>
+                        {% for category in categories %}
+                        <option value="{{category}}">{{category}}</option>
+
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="amount" class="form-label">
+                        Monthly Budget (£)
+                    </label>
+
+                    <input type="number" step="0.01" min="0.01" class="form-control" id="amount" name="amount"
+                        placeholder="Enter budget amount" value="{{amount}}" >
+
+                        <small class="text-muted">
+                            Set the maximum amount you'd like to spend in this category each month.
+                        </small>
+                </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        Create Budget
+                    </button>
+
+
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+        document.querySelector("#name").value = "{{ name }}";
+</script>
+
+{% endblock %}
