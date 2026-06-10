@@ -105,10 +105,10 @@ def register():
             return render_template("/auth/register.html", name=name, email=email, password=password, confirm=confirm_password)
         try:
             # add user to database and hash password
-            hash = generate_password_hash(password)
-            username = email[:search(email, '@')]
+            password_hash = generate_password_hash(password)
+            username = email[:search(email, '@')] 
             db.execute("INSERT INTO users (name , email, username , hash) VALUES( ?, ?, ?, ?)",
-                       name, email, username, hash)
+                       name, email, username, password_hash)
         except ValueError:
             flash("Email already exits  , try to log in", "warning")
             return render_template("/auth/login.html")
@@ -193,7 +193,7 @@ def dashboard():
         "SELECT category, SUM(amount) AS total FROM transactions WHERE user_id = ? AND type = 'Expense' GROUP BY category", session["user_id"])
 
     times = db.execute(
-        "SELECT strftime('%Y-%m', date) AS month, SUM(amount) AS total FROM transactions WHERE user_id = ? AND type = 'Expense' GROUP BY date ORDER BY date", session["user_id"])
+        "SELECT strftime('%Y-%m', date) AS month, SUM(amount) AS total FROM transactions WHERE user_id = ? AND type = 'Expense' GROUP BY month ORDER BY month", session["user_id"])
 
     categories = [row["category"] for row in rows]
     amounts = [handle_expense(row["total"]) for row in rows]
@@ -243,7 +243,8 @@ def change_password():
             return render_template("/profile/change_password.html", current=current_password, new=new_password, confirm=confirm_password)
         if new_password != confirm_password:
             flash("Password don't match", "danger")
-            return redirect("/profile/change_password.html")
+            return render_template("/profile/change_password.html", current=current_password, new=new_password, confirm=confirm_password)
+
 
         rows = db.execute(
             "SELECT hash FROM users WHERE id = ?", session["user_id"])
@@ -251,9 +252,9 @@ def change_password():
             flash("Current password is incorrect", "danger")
             return render_template("/profile/change_password.html", current=current_password, new=new_password, confirm=confirm_password)
 
-        hash = generate_password_hash(new_password)
+        password_hash = generate_password_hash(new_password)
         db.execute("UPDATE users SET hash = ? WHERE id = ? ",
-                   hash, session["user_id"])
+                   password_hash, session["user_id"])
         flash("Password has been updated successfully", "success")
         del current_password, new_password, confirm_password
         return redirect("/profile")
@@ -265,8 +266,8 @@ def change_password():
 @app.route("/profile/delete", methods=["POST"])
 @login_required
 def delete():
-    db.execute("DELETE FROM transactions WHERE id = ?", session["user_id"])
-    db.execute("DELETE FROM budget WHERE id = ?", session["user_id"])
+    db.execute("DELETE FROM transactions WHERE user_id = ?", session["user_id"])
+    db.execute("DELETE FROM budget WHERE uer_id = ?", session["user_id"])
     db.execute("DELETE FROM users WHERE id = ?", session["user_id"])
     session.clear()
     return redirect("/")
@@ -407,7 +408,7 @@ def addTransaction():
 @login_required
 def deleteTransactions(id):
 
-    db.execute("DELETE FROM transactions WHERE id = ? ", id)
+    db.execute("DELETE FROM transactions WHERE id = ? AND use_id = ? ", id , session["user_id"])
     return redirect("/transactions")
 
 
@@ -477,8 +478,8 @@ def editTransactions(id):
             amount = amount * -1
 
         db.execute(
-            "UPDATE transactions SET type = ?, category = ? , amount = ? , description = ? , date = ?  WHERE id = ?",
-            type, category, amount, description, date, id)
+            "UPDATE transactions SET type = ?, category = ? , amount = ? , description = ? , date = ?  WHERE id = ? AND user_id  = ?",
+            type, category, amount, description, date, id , session["user_id"])
         flash("Transaction was updated successfully", "success")
         return redirect("/transactions")
     else:
@@ -500,7 +501,6 @@ def budgets():
     budgets = get_budgets(db)
     # spent =  db.execute("SELECT category , SUM(amount) AS spent FROM transactions WHERE user_id = ? AND type = 'Expense' GROUP BY category" , session["user_id"] )
     return render_template("/budgets/budgets.html", budgets=budgets)
-
 
 @app.route("/budgets/add", methods=["POST", "GET"])
 @login_required
