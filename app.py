@@ -2,7 +2,7 @@ import os
 from io import BytesIO
 from PIL import Image
 from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session , send_file
+from flask import Flask, flash, redirect, render_template, request, session, send_file
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
@@ -80,10 +80,10 @@ def not_found():
 @app.route("/register", methods=["POST", "GET"])
 def register():
     if request.method == "POST":
-        name = request.form.get("name").strip()
-        email = request.form.get("email").strip().lower()
-        password = request.form.get("password").strip()
-        confirm_password = request.form.get("confirmPassword").strip()
+        name = request.form.get("name","").strip()
+        email = request.form.get("email","").strip().lower()
+        password = request.form.get("password","").strip()
+        confirm_password = request.form.get("confirmPassword","").strip()
 
         if not name:
             flash("Name is required", "danger")
@@ -106,7 +106,11 @@ def register():
         try:
             # add user to database and hash password
             password_hash = generate_password_hash(password)
-            username = email[:search(email, '@')] 
+            username = email[:search(email, '@')]
+            rows = db.execute("SELECT  COUNT(*) AS count FROM users WHERE username LIKE ?",
+                              f"{username}%")
+            if rows[0]["count"] >= 1:
+                username = f'{username}{rows[0]["count"] + 1}'
             db.execute("INSERT INTO users (name , email, username , hash) VALUES( ?, ?, ?, ?)",
                        name, email, username, password_hash)
         except ValueError:
@@ -134,8 +138,8 @@ def login():
 
     if request.method == "POST":
         # get email or username and password
-        email = request.form.get("email").strip().lower()
-        password = request.form.get("password").strip()
+        email = request.form.get("email","").strip().lower()
+        password = request.form.get("password","").strip()
 
         if not email:
             flash("Email/Username is required", "danger")
@@ -226,9 +230,9 @@ def profile():
 @login_required
 def change_password():
     if request.method == "POST":
-        current_password = request.form.get("current_password").strip()
-        new_password = request.form.get("new_password").strip()
-        confirm_password = request.form.get("confirm_password").strip()
+        current_password = request.form.get("current_password","").strip()
+        new_password = request.form.get("new_password","").strip()
+        confirm_password = request.form.get("confirm_password","").strip()
 
         if not current_password:
             flash("Current password is required", "danger")
@@ -244,7 +248,6 @@ def change_password():
         if new_password != confirm_password:
             flash("Password don't match", "danger")
             return render_template("/profile/change_password.html", current=current_password, new=new_password, confirm=confirm_password)
-
 
         rows = db.execute(
             "SELECT hash FROM users WHERE id = ?", session["user_id"])
@@ -266,8 +269,9 @@ def change_password():
 @app.route("/profile/delete", methods=["POST"])
 @login_required
 def delete():
-    db.execute("DELETE FROM transactions WHERE user_id = ?", session["user_id"])
-    db.execute("DELETE FROM budget WHERE uer_id = ?", session["user_id"])
+    db.execute("DELETE FROM transactions WHERE user_id = ?",
+               session["user_id"])
+    db.execute("DELETE FROM budget WHERE user_id = ?", session["user_id"])
     db.execute("DELETE FROM users WHERE id = ?", session["user_id"])
     session.clear()
     return redirect("/")
@@ -289,21 +293,20 @@ def upload_profile_picture():
     try:
         Image.open(file).verify()
         file.seek(0)
-    except:
+    except Exception:
         flash("Invalid image file.", "danger")
         return redirect("/profile")
 
     # Get old image path from database
     old_image = db.execute(
-        "SELECT profile_picutre FROM users WHERE id = ?",
+        "SELECT profile_picture FROM users WHERE id = ?",
         session["user_id"]
-    )[0]["profile_picutre"]
+    )[0]["profile_picture"]
 
     # Delete old image if it exists
-    print("Found")
-    if old_image != "static/images/default.png" and os.path.exists(old_image):
+    if old_image != "default.png" and os.path.exists(f"static/images/{old_image}"):
         print("Found")
-        os.remove(old_image)
+        os.remove(f"static/images/{old_image}")
 
     # name_image
     filename = f"{session['user_id']}.{secure_filename(file.filename).rsplit('.', 1)[-1].lower()}"
@@ -311,7 +314,7 @@ def upload_profile_picture():
     file.save(f"static/images/{filename}")
 
     db.execute(
-        "UPDATE users SET profile_picutre = ? WHERE id = ?",
+        "UPDATE users SET profile_picture = ? WHERE id = ?",
         filename,
         session["user_id"]
     )
@@ -334,14 +337,14 @@ def addTransaction():
     if request.method == "POST":
 
         # get user input
-        type = request.form.get("type")
-        amount = request.form.get("amount")
-        category = request.form.get("category")
-        date = request.form.get("date")
-        description = request.form.get("description")
+        transaction_type = request.form.get("type", "").strip()
+        amount = request.form.get("amount", "").strip()
+        category = request.form.get("category", "").strip()
+        date = request.form.get("date" , "").strip()
+        description = request.form.get("description", "").strip()
 
         # check if type is not empty
-        if not type:
+        if not transaction_type:
             flash("Type is required.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES, )
 
@@ -349,25 +352,25 @@ def addTransaction():
         if not amount:
             flash("Amount is required.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES,
-                                   type=type)
+                                   transaction_type=transaction_type)
 
         # check if category is not empty
         if not category:
             flash("Category is required.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES,
-                                   type=type, amount=amount)
+                                   transaction_type=transaction_type, amount=amount)
 
         # check if date is not empty
         if not date:
             flash("Date is required.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES,
-                                   type=type, amount=amount, category=category)
+                                   transaction_type=transaction_type, amount=amount, category=category)
 
         # check if type not an income or expense
-        if not type in TYPES:
+        if not transaction_type in TYPES:
             flash("Invalid type.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES,
-                                   type=type, amount=amount, category=category, date=date,
+                                   transaction_type=transaction_type, amount=amount, category=category, date=date,
                                    description=description)
 
         # check if tamount less than zero
@@ -376,27 +379,27 @@ def addTransaction():
         except ValueError:
             flash("Amount must be a number.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES,
-                                   type=type, amount=amount, category=category, date=date,
+                                   transaction_type=transaction_type, amount=amount, category=category, date=date,
                                    description=description)
 
         if amount <= 0:
             flash("Invalid amount , amount must be greater than 0.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES,
-                                   type=type, amount=amount, category=category, date=date,
+                                   transaction_type=transaction_type, amount=amount, category=category, date=date,
                                    description=description)
 
         # check if category not a valid one
         if not category in CATEGORIES:
             flash("Invalid category.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES,
-                                   type=type, amount=amount, category=category, date=date, description=description)
+                                   transaction_type=transaction_type, amount=amount, category=category, date=date, description=description)
 
-        if type == "Expense":
+        if transaction_type == "Expense":
             amount = amount * -1
 
         db.execute(
             "INSERT INTO transactions (user_id, type, category, amount, description, date) VALUES(?, ?, ?, ?, ?, ?)",
-            session["user_id"], type, category, amount, description, date)
+            session["user_id"], transaction_type, category, amount, description, date)
         flash("Transaction was added successfully", "success")
         return redirect("/transactions")
 
@@ -408,7 +411,8 @@ def addTransaction():
 @login_required
 def deleteTransactions(id):
 
-    db.execute("DELETE FROM transactions WHERE id = ? AND use_id = ? ", id , session["user_id"])
+    db.execute("DELETE FROM transactions WHERE id = ? AND user_id = ? ",
+               id, session["user_id"])
     return redirect("/transactions")
 
 
@@ -417,14 +421,14 @@ def deleteTransactions(id):
 def editTransactions(id):
     if request.method == "POST":
         # get user input
-        type = request.form.get("type")
-        amount = request.form.get("amount")
-        category = request.form.get("category")
+        transaction_type = request.form.get("type", "").strip()
+        amount = request.form.get("amount", "").strip()
+        category = request.form.get("category", "").strip()
         date = request.form.get("date")
-        description = request.form.get("description")
+        description = request.form.get("description", "").strip()
 
         # check if type is not empty
-        if not type:
+        if not transaction_type:
             flash("Type is required.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES, )
 
@@ -432,25 +436,25 @@ def editTransactions(id):
         if not amount:
             flash("Amount is required.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES,
-                                   type=type)
+                                   transaction_type=transaction_type)
 
         # check if category is not empty
         if not category:
             flash("Category is required.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES,
-                                   type=type, amount=amount)
+                                   transaction_type=transaction_type, amount=amount)
 
         # check if date is not empty
         if not date:
             flash("Date is required.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES,
-                                   type=type, amount=amount, category=category)
+                                   transaction_type=transaction_type, amount=amount, category=category)
 
         # check if type not an income or expense
-        if not type in TYPES:
+        if not transaction_type in TYPES:
             flash("Invalid type.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES,
-                                   type=type, amount=amount, category=category, date=date,
+                                   transaction_type=transaction_type, amount=amount, category=category, date=date,
                                    description=description)
 
         # check if tamount less than zero
@@ -459,27 +463,27 @@ def editTransactions(id):
         except ValueError:
             flash("Amount must be a number.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES,
-                                   type=type, amount=amount, category=category, date=date,
+                                   transaction_type=transaction_type, amount=amount, category=category, date=date,
                                    description=description)
 
         if amount <= 0:
             flash("Invalid amount , amount must be greater than 0.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES,
-                                   type=type, amount=amount, category=category, date=date,
+                                   transaction_type=transaction_type, amount=amount, category=category, date=date,
                                    description=description)
 
         # check if category not a valid one
         if not category in CATEGORIES:
             flash("Invalid category.", "danger")
             return render_template("/transactions/add.html", types=TYPES, categories=CATEGORIES,
-                                   type=type, amount=amount, category=category, date=date, description=description)
+                                   transaction_type=transaction_type, amount=amount, category=category, date=date, description=description)
 
-        if type == "Expense":
+        if transaction_type == "Expense":
             amount = amount * -1
 
         db.execute(
             "UPDATE transactions SET type = ?, category = ? , amount = ? , description = ? , date = ?  WHERE id = ? AND user_id  = ?",
-            type, category, amount, description, date, id , session["user_id"])
+            transaction_type, category, amount, description, date, id, session["user_id"])
         flash("Transaction was updated successfully", "success")
         return redirect("/transactions")
     else:
@@ -492,7 +496,7 @@ def editTransactions(id):
             row["amount"]) if row["type"] == "Expense" else row["amount"]
 
         return render_template("/transactions/edit.html", types=TYPES, categories=CATEGORIES,
-                               type=row["type"], category=row["category"], amount=amount, date=row["date"], description=row["description"], id=id)
+                               transaction_type=row["type"], category=row["category"], amount=amount, date=row["date"], description=row["description"], id=id)
 
 
 @app.route("/budgets")
@@ -502,14 +506,15 @@ def budgets():
     # spent =  db.execute("SELECT category , SUM(amount) AS spent FROM transactions WHERE user_id = ? AND type = 'Expense' GROUP BY category" , session["user_id"] )
     return render_template("/budgets/budgets.html", budgets=budgets)
 
+
 @app.route("/budgets/add", methods=["POST", "GET"])
 @login_required
 def addBudget():
     if request.method == "POST":
 
         # get budget naem and amount
-        name = request.form.get("name")
-        amount = request.form.get("amount")
+        name = request.form.get("name" , "").strip()
+        amount = request.form.get("amount", "").strip()
 
         # check budget name is not empty
         if not name:
@@ -524,18 +529,18 @@ def addBudget():
         # check if category not a valid one
         if not name in CATEGORIES:
             flash("Invalid category.", "danger")
-            return render_template("/budgets /add.html", categories=CATEGORIES, name=name, amount=amount)
+            return render_template("/budgets/add.html", categories=CATEGORIES, name=name, amount=amount)
 
          # check if tamount less than zero
         try:
             amount = float(amount)
         except ValueError:
             flash("Budget must be a number.", "danger")
-            return render_template("/budgets /add.html", categories=CATEGORIES, name=name, amount=amount)
+            return render_template("/budgets/add.html", categories=CATEGORIES, name=name, amount=amount)
 
         if amount <= 0:
             flash("Invalid budget , budget must be greater than 0.", "danger")
-            return render_template("/budgets /add.html", categories=CATEGORIES, name=name, amount=amount)
+            return render_template("/budgets/add.html", categories=CATEGORIES, name=name, amount=amount)
         try:
             db.execute("INSERT INTO budget (user_id , name , amount) VALUES (?, ?, ?) ",
                        session["user_id"], name, amount)
@@ -567,31 +572,38 @@ def report():
     content.append(Paragraph("Personal Finance Report", styles["Title"]))
     content.append(Spacer(1, 20))
 
-    content.append(Paragraph(f"Current Balance : {gbp(balance)}", styles["Normal"]))
-    content.append(Paragraph(f"Total Income : {gbp(income)}", styles["Normal"]))
-    content.append(Paragraph(f"Total Expenses : {show_expense(expense)}", styles["Normal"]))
+    content.append(
+        Paragraph(f"Current Balance : {gbp(balance)}", styles["Normal"]))
+    content.append(
+        Paragraph(f"Total Income : {gbp(income)}", styles["Normal"]))
+    content.append(
+        Paragraph(f"Total Expenses : {show_expense(expense)}", styles["Normal"]))
 
     content.append(Spacer(1, 20))
 
     content.append(Paragraph("Budget Summary", styles["Heading2"]))
 
     budgets = get_budgets(db)
-    if  len(budgets) != 0:
+    if len(budgets) != 0:
         for budget in budgets:
-            content.append(Paragraph(f"{budget["name"]} : {show_expense(budget["spent"])} / {gbp(budget["budget"])}", styles["Normal"]))
+            content.append(Paragraph(
+                f"{budget['name']} : {show_expense(budget['spent'])} / {gbp(budget['budget'])}", styles["Normal"]))
     else:
-        content.append(Paragraph("You did not add any budget", styles["Normal"]))
+        content.append(
+            Paragraph("You did not add any budget", styles["Normal"]))
 
     content.append(Spacer(1, 20))
 
     content.append(Paragraph("Recent Transactions", styles["Heading2"]))
     transactions = get_transactions(db)
-    if  len(transactions) != 0 :
+    if len(transactions) != 0:
 
         for transaction in transactions:
-            content.append(Paragraph(f"{transaction["type"]}   |   {transaction["category"]}   |   £{transaction["amount"]}   |   {transaction["date"]}", styles["Normal"]))
+            content.append(Paragraph(
+                f"{transaction['type']}   |   {transaction['category']}   |   £{transaction['amount']}   |   {transaction['date']}", styles["Normal"]))
     else:
-        content.append(Paragraph("You did not do any transaction", styles["Normal"]))
+        content.append(
+            Paragraph("You did not do any transaction", styles["Normal"]))
 
     pdf.build(content)
 
@@ -600,7 +612,7 @@ def report():
     return send_file(
         buffer,
         as_attachment=True,
-        download_name= "finance_report.pdf",
+        download_name="finance_report.pdf",
         mimetype="application/pdf"
     )
 

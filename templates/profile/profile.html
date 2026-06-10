@@ -15,7 +15,7 @@ Profile
                 <div class="profile-picture-container text-center mb-4 "
                     onclick="document.getElementById('profile_picture').click()">
 
-                    <img src="{{ url_for('static', filename='images/' + user.profile_picutre) }}" alt="Profile Picture"
+                    <img src="{{ url_for('static', filename='images/' + user.profile_picture) }}" alt="Profile Picture"
                         enctype="multipart/form-data" class="profile-picture rounded-circle mb-3 border">
                     <input type="file" id="profile_picture" name="profile_picture" accept=".jpg,.jpeg,.png,.webp"
                         onchange="this.form.submit()" hidden>
