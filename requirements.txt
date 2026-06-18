@@ -4,4 +4,3 @@ cs50
 Pillow
 reportlab
 Werkzeug
-gunicorn

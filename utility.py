@@ -87,7 +87,7 @@ def get_transactions(datebase, e=""):
 
 
 def get_budgets(datebase):
-    rows  = datebase.execute("SELECT name , budget.amount As [budget] ,  sum(transactions.amount) AS spent  FROM budget LEFT JOIN transactions ON transactions.user_id = budget.user_id AND transactions.category = budget.name WHERE budget.user_id = ? GROUP BY name , budget ", session["user_id"])
+    rows  = datebase.execute("SELECT name , budgets.amount As [budget] ,  sum(transactions.amount) AS spent  FROM budgets LEFT JOIN transactions ON transactions.user_id = budgets.user_id AND transactions.category = budgets.name WHERE budgets.user_id = ? GROUP BY name , budget ", session["user_id"])
     for row in rows:
         if row["spent"] == None :
             row["spent"] = 0.0

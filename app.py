@@ -20,7 +20,6 @@ from utility import login_required, search, gbp, get_expense, get_income, get_tr
 
 # Configure application
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY")
 
 # Custom filter
 app.jinja_env.filters["gbp"] = gbp
@@ -272,7 +271,7 @@ def change_password():
 def delete():
     db.execute("DELETE FROM transactions WHERE user_id = ?",
                session["user_id"])
-    db.execute("DELETE FROM budget WHERE user_id = ?", session["user_id"])
+    db.execute("DELETE FROM budgets WHERE user_id = ?", session["user_id"])
     db.execute("DELETE FROM users WHERE id = ?", session["user_id"])
     session.clear()
     return redirect("/")
@@ -543,7 +542,7 @@ def addBudget():
             flash("Invalid budget , budget must be greater than 0.", "danger")
             return render_template("/budgets/add.html", categories=CATEGORIES, name=name, amount=amount)
         try:
-            db.execute("INSERT INTO budget (user_id , name , amount) VALUES (?, ?, ?) ",
+            db.execute("INSERT INTO budgets (user_id , name , amount) VALUES (?, ?, ?) ",
                        session["user_id"], name, amount)
         except ValueError:
             flash("Buget already exist", "danger")
